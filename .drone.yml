@@ -23,7 +23,7 @@ steps:
   commands:
   - npm install --package-lock
   depends_on:
-    - restore
+    - "[CACHE] Restore"
   mount:
     - node_modules
 
@@ -44,7 +44,7 @@ steps:
     when:
       event: push
   depends_on:
-    - Install Deps
+    - "[INSTALL] Deps" 
 
 - name: "[BUILD] Dockerfile"
   image: docker:dind
@@ -61,7 +61,7 @@ steps:
   - docker build -t juice-shop:test .
   - docker push digi59404/juice-shop:test
   depends_on:
-    - Install Deps
+    - "[INSTALL] Deps" 
     
 - name: "[Security] Scan Deps"
   image: registry.gitlab.com/gitlab-ci-utils/docker-dependency-check:latest
@@ -71,7 +71,7 @@ steps:
   - /usr/share/dependency-check/bin/dependency-check.sh --scan "./" --format ALL --project "$DC_PROJECT" --failOnCVSS 0
   - if [ $(grep -c "vulnerabilities" dependency-check-report.json) -gt 0 ]; then exit 2; fi
   depends_on:
-    - Install Deps
+    - "[INSTALL] Deps" 
   mount:
     - node_modules
     
@@ -82,7 +82,7 @@ steps:
   commands:
   - semgrep ci
   depends_on:
-    - Install Deps
+    - "[INSTALL] Deps" 
   mount:
     - node_modules
 
@@ -91,7 +91,7 @@ steps:
   commands:
   - cd frontend && ./node_modules/@angular/cli/bin/ng test --watch=false --source-map=true && cd .. && npm run test:server
   depends_on:
-    - Install Deps
+    - "[INSTALL] Deps" 
   mount:
     - node_modules
 
@@ -100,7 +100,7 @@ steps:
   commands:
   - npm run test:server
   depends_on:
-    - Install Deps
+    - "[INSTALL] Deps" 
   mount:
     - node_modules
     
