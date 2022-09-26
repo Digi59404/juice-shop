@@ -14,11 +14,12 @@ steps:
       from_secret: S3_SECRET
     restore: true
     
-- name: test
+- name: Install Deps
   image: node
   commands:
   - npm install
-  - npm test
+  depends_on:
+    - restore
 
 - name: rebuild
   image: plugins/s3-cache
@@ -34,6 +35,33 @@ steps:
       - node_modules
     when:
       event: push
+  depends_on:
+    - Install Deps
+
+- name: Build_Frontend
+  image: node
+  commands:
+  - npm run postinstall
+  - npm run build:frontend
+
+- name: Build_Backend
+  image: node
+  commands:
+  - npm run build:server
+
+- name: Test_Frontend
+  image: node
+  commands:
+  - cd frontend && ./node_modules/@angular/cli/bin/ng test --watch=false --source-map=true && cd .. && npm run test:server
+  depends_on:
+    - Build_Frontend
+
+- name: Test_Backend
+  image: node
+  commands:
+  - npm run test:server
+  depends_on:
+    - Build_Backend
 
 trigger:
   branch:
