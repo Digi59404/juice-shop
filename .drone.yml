@@ -59,7 +59,7 @@ steps:
       from_secret: DOCKERHUB
   commands:
   - docker login -u $DOCKERUSER -p $DOCKERPASS
-  - docker build -t juice-shop:test .
+  - docker build -t digi59404/juice-shop:test .
   - docker push digi59404/juice-shop:test
   depends_on:
     - "[INSTALL] Deps" 
@@ -67,7 +67,7 @@ steps:
 - name: "[SECURITY] Scan Deps"
   image: registry.gitlab.com/gitlab-ci-utils/docker-dependency-check:latest
   environment:
-    DC_PROJECT: "dependency-check scan: $(pwd)"
+    DC_PROJECT: "juice-shop"
   commands:
   - /usr/share/dependency-check/bin/dependency-check.sh --scan "./" --format ALL --project "$DC_PROJECT" --failOnCVSS 0
   depends_on:
@@ -89,7 +89,8 @@ steps:
 - name: "[TEST] Frontend"
   image: node
   commands:
-  - cd frontend && ./node_modules/@angular/cli/bin/ng test --watch=false --source-map=true && cd .. && npm run test:server
+  - npm install -g @angular/cli --force
+  - npm run test
   depends_on:
     - "[INSTALL] Deps" 
   mount:
