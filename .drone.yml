@@ -2,7 +2,7 @@ kind: pipeline
 name: default
 
 steps:
-- name: restore
+- name: "[CACHE] Restore"
   image: meltwater/drone-cache:dev
   pull: true
   environment:
@@ -16,16 +16,18 @@ steps:
     restore: true
     bucket: juice-shop-bucket
   mount:
-    - node_module
+    - node_modules
     
-- name: Install Deps
+- name: "[INSTALL] Deps" 
   image: node
   commands:
-  - npm install
+  - npm install --package-lock
   depends_on:
     - restore
+  mount:
+    - node_modules
 
-- name: rebuild
+- name: "[CACHE] Upload"
   image: plugins/s3-cache
   pull: true
   environment:
@@ -44,7 +46,7 @@ steps:
   depends_on:
     - Install Deps
 
-- name: Build Dockerfile
+- name: "[BUILD] Dockerfile"
   image: docker:dind
   volumes:
   - name: dockersock
@@ -70,20 +72,37 @@ steps:
   - if [ $(grep -c "vulnerabilities" dependency-check-report.json) -gt 0 ]; then exit 2; fi
   depends_on:
     - Install Deps
+  mount:
+    - node_modules
+    
+- name: "[Security] SEMGREP Scan"
+  image: returntocorp/semgrep
+  environment:
+    SEMGREP_RULES: "p/default"
+  commands:
+  - semgrep ci
+  depends_on:
+    - Install Deps
+  mount:
+    - node_modules
 
-- name: Test Frontend
+- name: "[TEST] Frontend"
   image: node
   commands:
   - cd frontend && ./node_modules/@angular/cli/bin/ng test --watch=false --source-map=true && cd .. && npm run test:server
   depends_on:
     - Install Deps
+  mount:
+    - node_modules
 
-- name: Test Backend
+- name: "[TEST] Backend"
   image: node
   commands:
   - npm run test:server
   depends_on:
     - Install Deps
+  mount:
+    - node_modules
     
 volumes:
 - name: dockersock
