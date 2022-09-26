@@ -47,8 +47,8 @@ steps:
   mount:
     - node_modules
     - frontend/node_modules
-    when:
-      event: push
+  when:
+    event: push
   depends_on:
     - "[INSTALL] Deps" 
 
