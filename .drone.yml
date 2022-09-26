@@ -38,30 +38,34 @@ steps:
   depends_on:
     - Install Deps
 
-- name: Build_Frontend
+- name: Build Frontend
   image: node
   commands:
   - npm run postinstall
   - npm run build:frontend
+  depends_on:
+    - Install Deps
 
-- name: Build_Backend
+- name: Build Backend
   image: node
   commands:
   - npm run build:server
+  depends_on:
+    - Install Deps
 
-- name: Test_Frontend
+- name: Test Frontend
   image: node
   commands:
   - cd frontend && ./node_modules/@angular/cli/bin/ng test --watch=false --source-map=true && cd .. && npm run test:server
   depends_on:
-    - Build_Frontend
+    - Build Frontend
 
-- name: Test_Backend
+- name: Test Backend
   image: node
   commands:
   - npm run test:server
   depends_on:
-    - Build_Backend
+    - Build Backend
 
 trigger:
   branch:
