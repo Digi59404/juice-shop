@@ -47,8 +47,6 @@ steps:
   mount:
     - node_modules
     - frontend/node_modules
-  when:
-    event: push
   depends_on:
     - "[INSTALL] Deps" 
 
@@ -96,9 +94,8 @@ steps:
     - frontend/node_modules
 
 - name: "[TEST] Frontend"
-  image: node
+  image: geekykaran/headless-chrome-node-docker:latest
   commands:
-  - npm install -g @angular/cli --force
   - npm run test
   depends_on:
     - "[INSTALL] Deps" 
