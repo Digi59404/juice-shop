@@ -56,7 +56,7 @@ steps:
   depends_on:
     - Install Deps
     
-- name: Security: Scan Deps
+- name: "[Security] Scan Deps"
   image: registry.gitlab.com/gitlab-ci-utils/docker-dependency-check:latest
   environment:
     DC_PROJECT: "dependency-check scan: $(pwd)"
