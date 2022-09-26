@@ -18,15 +18,18 @@ steps:
     bucket: juice-shop-bucket
   mount:
     - node_modules
+    - frontend/node_modules
     
 - name: "[INSTALL] Deps" 
   image: node
   commands:
   - npm install --package-lock
+  - cd frontend && npm install --legacy-peer-deps
   depends_on:
     - "[CACHE] Restore"
   mount:
     - node_modules
+    - frontend/node_modules
 
 - name: "[CACHE] Upload"
   image: meltwater/drone-cache:dev
@@ -41,8 +44,9 @@ steps:
     region: us-east-1
     cache_key: '{{ .Commit.Branch }}'
     rebuild: true
-    mount:
-      - node_modules
+  mount:
+    - node_modules
+    - frontend/node_modules
     when:
       event: push
   depends_on:
@@ -62,7 +66,10 @@ steps:
   - docker build -t digi59404/juice-shop:test .
   - docker push digi59404/juice-shop:test
   depends_on:
-    - "[INSTALL] Deps" 
+    - "[INSTALL] Deps"
+  mount:
+    - node_modules
+    - frontend/node_modules
     
 - name: "[SECURITY] Scan Deps"
   image: registry.gitlab.com/gitlab-ci-utils/docker-dependency-check:latest
@@ -74,6 +81,7 @@ steps:
     - "[INSTALL] Deps" 
   mount:
     - node_modules
+    - frontend/node_moduless
     
 - name: "[SECURITY] SEMGREP Scan"
   image: returntocorp/semgrep
@@ -85,6 +93,7 @@ steps:
     - "[INSTALL] Deps" 
   mount:
     - node_modules
+    - frontend/node_modules
 
 - name: "[TEST] Frontend"
   image: node
@@ -95,6 +104,7 @@ steps:
     - "[INSTALL] Deps" 
   mount:
     - node_modules
+    - frontend/node_modules
 
 - name: "[TEST] Backend"
   image: node
@@ -104,6 +114,7 @@ steps:
     - "[INSTALL] Deps" 
   mount:
     - node_modules
+    - frontend/node_modules
     
 volumes:
 - name: dockersock
