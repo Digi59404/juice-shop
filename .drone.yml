@@ -38,6 +38,7 @@ steps:
       from_secret: S3_SECRET
   settings:
     endpoint: http://ewr1.vultrobjects.com
+    region: us-east-1
     cache_key: '{{ .Commit.Branch }}'
     rebuild: true
     mount:
