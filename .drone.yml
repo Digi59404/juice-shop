@@ -2,8 +2,35 @@ kind: pipeline
 name: default
 
 steps:
+- name: restore
+  image: plugins/s3-cache
+  settings:
+    pull: true
+    root: juice-shop-build
+    endpoint: ewr1.vultrobjects.com
+    access_key:
+      from_secret: S3_ACCESS
+    secret_key:
+      from_secret: S3_SECRET
+    restore: true
+    
 - name: test
   image: node
   commands:
   - npm install
   - npm test
+
+- name: rebuild
+  image: plugins/s3-cache
+  settings:
+    root: juice-shop-build
+    endpoint: ewr1.vultrobjects.com
+    access_key:
+      from_secret: S3_ACCESS
+    secret_key:
+      from_secret: S3_SECRET
+    rebuild: true
+    mount:
+      - node_modules
+    when:
+      event: push
