@@ -5,12 +5,14 @@ steps:
 - name: restore
   image: meltwater/drone-cache:dev
   pull: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: S3_ACCESS
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: S3_SECRET
   settings:
     endpoint: http://ewr1.vultrobjects.com
-    access-key:
-      from_secret: S3_ACCESS
-    secret-key:
-      from_secret: S3_SECRET
+    cache_key: '{{ .Commit.Branch }}'
     restore: true
     bucket: juice-shop-bucket
   mount:
@@ -25,12 +27,15 @@ steps:
 
 - name: rebuild
   image: plugins/s3-cache
+  pull: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: S3_ACCESS
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: S3_SECRET
   settings:
     endpoint: http://ewr1.vultrobjects.com
-    access_key:
-      from_secret: S3_ACCESS
-    secret_key:
-      from_secret: S3_SECRET
+    cache_key: '{{ .Commit.Branch }}'
     rebuild: true
     mount:
       - node_modules
