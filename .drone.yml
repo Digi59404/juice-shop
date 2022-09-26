@@ -3,15 +3,18 @@ name: default
 
 steps:
 - name: restore
-  image: plugins/s3-cache
+  image: meltwater/drone-cache:dev
+  pull: true
   settings:
-    pull: true
     endpoint: http://ewr1.vultrobjects.com
-    access_key:
+    access-key:
       from_secret: S3_ACCESS
-    secret_key:
+    secret-key:
       from_secret: S3_SECRET
     restore: true
+    bucket: juice-shop-bucket
+  mount:
+    - node_module
     
 - name: Install Deps
   image: node
@@ -36,34 +39,49 @@ steps:
   depends_on:
     - Install Deps
 
-- name: Build Frontend
-  image: node
+- name: Build Dockerfile
+  image: docker:dind
+  volumes:
+  - name: dockersock
+    path: /var/run/docker.sock
+  environment:
+    DOCKERUSER: 'digi59404'
+    DOCKERPASS:
+      from_secret: DOCKERHUB
   commands:
-  - npm run postinstall
-  - npm run build:frontend
+  - docker ps -a
+  - docker login -u $DOCKERUSER -p $DOCKERPASS
+  - docker build -t juice-shop:test .
+  - docker push digi59404/juice-shop:test
   depends_on:
     - Install Deps
-
-- name: Build Backend
-  image: node
+    
+- name: Security: Scan Deps
+  image: registry.gitlab.com/gitlab-ci-utils/docker-dependency-check:latest
+  environment:
+    DC_PROJECT: "dependency-check scan: $(pwd)"
   commands:
-  - npm run build:server
-  depends_on:
-    - Install Deps
+  - /usr/share/dependency-check/bin/dependency-check.sh --scan "./" --format ALL --project "$DC_PROJECT" --failOnCVSS 0
+  - if [ $(grep -c "vulnerabilities" dependency-check-report.json) -gt 0 ]; then exit 2; fi
 
 - name: Test Frontend
   image: node
   commands:
   - cd frontend && ./node_modules/@angular/cli/bin/ng test --watch=false --source-map=true && cd .. && npm run test:server
   depends_on:
-    - Build Frontend
+    - Install Deps
 
 - name: Test Backend
   image: node
   commands:
   - npm run test:server
   depends_on:
-    - Build Backend
+    - Install Deps
+    
+volumes:
+- name: dockersock
+  host:
+    path: /var/run/docker.sock
 
 trigger:
   branch:
