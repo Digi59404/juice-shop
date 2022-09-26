@@ -28,7 +28,7 @@ steps:
     - node_modules
 
 - name: "[CACHE] Upload"
-  image: plugins/s3-cache
+  image: meltwater/drone-cache:dev
   pull: true
   environment:
     AWS_ACCESS_KEY_ID:
