@@ -7,7 +7,7 @@ steps:
   settings:
     pull: true
     root: juice-shop-build
-    endpoint: ewr1.vultrobjects.com
+    endpoint: s3://ewr1.vultrobjects.com
     access_key:
       from_secret: S3_ACCESS
     secret_key:
@@ -24,7 +24,7 @@ steps:
   image: plugins/s3-cache
   settings:
     root: juice-shop-build
-    endpoint: ewr1.vultrobjects.com
+    endpoint: s3://ewr1.vultrobjects.com
     access_key:
       from_secret: S3_ACCESS
     secret_key:
@@ -34,3 +34,7 @@ steps:
       - node_modules
     when:
       event: push
+
+trigger:
+  branch:
+  - master
