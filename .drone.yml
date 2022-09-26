@@ -64,19 +64,18 @@ steps:
   depends_on:
     - "[INSTALL] Deps" 
     
-- name: "[Security] Scan Deps"
+- name: "[SECURITY] Scan Deps"
   image: registry.gitlab.com/gitlab-ci-utils/docker-dependency-check:latest
   environment:
     DC_PROJECT: "dependency-check scan: $(pwd)"
   commands:
   - /usr/share/dependency-check/bin/dependency-check.sh --scan "./" --format ALL --project "$DC_PROJECT" --failOnCVSS 0
-  - if [ $(grep -c "vulnerabilities" dependency-check-report.json) -gt 0 ]; then exit 2; fi
   depends_on:
     - "[INSTALL] Deps" 
   mount:
     - node_modules
     
-- name: "[Security] SEMGREP Scan"
+- name: "[SECURITY] SEMGREP Scan"
   image: returntocorp/semgrep
   environment:
     SEMGREP_RULES: "p/default"
