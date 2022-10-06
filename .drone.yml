@@ -86,7 +86,7 @@ steps:
   environment:
     SEMGREP_RULES: "p/default"
   commands:
-  - semgrep ci
+  - semgrep ci --json --output semgrep-findings.json || true
   depends_on:
     - "[INSTALL] Deps" 
   mount:
@@ -94,7 +94,7 @@ steps:
     - frontend/node_modules
 
 - name: "[TEST] Frontend"
-  image: geekykaran/headless-chrome-node-docker:latest
+  image: zenika/alpine-chrome:latest
   commands:
   - npm run test
   depends_on:
