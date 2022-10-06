@@ -94,7 +94,7 @@ steps:
     - frontend/node_modules
 
 - name: "[TEST] Frontend"
-  image: zenika/alpine-chrome:latest
+  image: madve2/headless-chrome-node-docker
   commands:
   - npm run test
   depends_on:
